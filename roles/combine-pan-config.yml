@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Import Vars...
+      include_vars:
+        file: example-pan-os-dictionary.yml
+    - name: Combine Templates...
+      template: 
+        src: templates/example-pan-snippet.j2
+        dest: example-pan-snippet.conf
