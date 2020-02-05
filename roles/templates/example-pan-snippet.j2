@@ -1,177 +1,69 @@
-no service pad
-service timestamps debug uptime
-service timestamps log uptime
-no service password-encryption
-!
-hostname {{ global.hostname }}-{{ global.switchid }}
-!
-no aaa new-model
-system mtu routing 1500
-ip routing
-no ip domain-lookup
-ipv6 unicast-routing
-!
-spanning-tree mode rapid-pvst
-spanning-tree loopguard default
-spanning-tree logging
-spanning-tree portfast default
-spanning-tree portfast bpduguard default
-spanning-tree extend system-id
-spanning-tree uplinkfast
-spanning-tree backbonefast
-spanning-tree pathcost method long
-spanning-tree vlan 1-4094 priority 8192
-!
-errdisable recovery cause udld
-errdisable recovery cause bpduguard
-errdisable recovery cause security-violation
-errdisable recovery cause channel-misconfig (STP)
-errdisable recovery cause pagp-flap
-errdisable recovery cause dtp-flap
-errdisable recovery cause link-flap
-errdisable recovery cause sfp-config-mismatch
-errdisable recovery cause gbic-invalid
-errdisable recovery cause l2ptguard
-errdisable recovery cause psecure-violation
-errdisable recovery cause port-mode-failure
-errdisable recovery cause dhcp-rate-limit
-errdisable recovery cause pppoe-ia-rate-limit
-errdisable recovery cause mac-limit
-errdisable recovery cause vmps
-errdisable recovery cause storm-control
-errdisable recovery cause inline-power
-errdisable recovery cause arp-inspection
-errdisable recovery cause loopback
-errdisable recovery cause small-frame
-!
-interface Loopback0
- ip address {{ ip.prefix }}.0.{{ global.switchid }} 255.255.255.255
- ip router isis {{ isis.instancename }}
- ipv6 address {{ ipv6.prefix }}::{{ global.switchid }}/128
- ipv6 ospf 1 area 0
-!
-interface FastEthernet1/0/1
-!
-interface FastEthernet1/0/2
-!
-interface FastEthernet1/0/3
-!
-interface FastEthernet1/0/4
-!
-interface FastEthernet1/0/5
-!
-interface FastEthernet1/0/6
-!
-interface FastEthernet1/0/7
-!
-interface FastEthernet1/0/8
-!
-interface FastEthernet1/0/9
-!
-interface FastEthernet1/0/10
-!
-interface FastEthernet1/0/11
-!
-interface FastEthernet1/0/12
-!
-interface FastEthernet1/0/13
-!
-interface FastEthernet1/0/14
-!
-interface FastEthernet1/0/15
-!
-interface FastEthernet1/0/16
-!
-interface FastEthernet1/0/17
-!
-interface FastEthernet1/0/18
-!
-interface FastEthernet1/0/19
-!
-interface FastEthernet1/0/20
-!
-interface FastEthernet1/0/21
- no switchport
- ip address {{ ip.prefix }}.{{ spine.two }}.{{ ip.uplink }} 255.255.255.254
- ip router isis {{ isis.instancename }}
- ipv6 address {{ ipv6.prefix }}:{{ spine.two }}::{{ ipv6.uplink }}/126
- ipv6 enable
- ipv6 ospf 1 area 0
-!
-interface FastEthernet1/0/22
-!
-interface FastEthernet1/0/23
-!
-interface FastEthernet1/0/24
- no switchport
- ip address {{ ip.prefix }}.{{ spine.one }}.{{ ip.uplink }} 255.255.255.254
- ip router isis {{ isis.instancename }}
- ipv6 address {{ ipv6.prefix }}:{{ spine.two }}::{{ ipv6.uplink }}/126
- ipv6 enable
- ipv6 ospf 1 area 0
-!
-interface GigabitEthernet1/0/1
-!
-interface GigabitEthernet1/0/2
-!
-interface Vlan1
- no ip address
-!
-router isis {{ isis.instancename }}
- net {{ isis.net }}
- is-type level-2-only
- ispf level-2
- log-adjacency-changes
-!
-router bgp {{ bgp.localasn }}
- bgp log-neighbor-changes
- neighbor {{ ip.prefix }}.0.{{ spine.one }} remote-as {{ bgp.localasn }}
- neighbor {{ ip.prefix }}.0.{{ spine.one }} update-source Loopback0
- neighbor {{ ip.prefix }}.0.{{ spine.two }} remote-as {{ bgp.localasn }}
- neighbor {{ ip.prefix }}.0.{{ spine.two }} update-source Loopback0
- neighbor {{ ipv6.prefix }}::{{ spine.one }} remote-as {{ bgp.localasn }}
- neighbor {{ ipv6.prefix }}::{{ spine.one }} update-source Loopback0
- neighbor {{ ipv6.prefix }}::{{ spine.two }} remote-as {{ bgp.localasn }}
- neighbor {{ ipv6.prefix }}::{{ spine.two }} update-source Loopback0
- maximum-paths 2
- !
- address-family ipv4
-  neighbor {{ ip.prefix }}.0.{{ spine.one }} activate
-  neighbor {{ ip.prefix }}.0.{{ spine.two }} activate
-  neighbor {{ ipv6.prefix }}::{{ spine.one }} activate
-  neighbor {{ ipv6.prefix }}::{{ spine.two }} activate
-  maximum-paths 2
-  no auto-summary
-  no synchronization
-  network {{ ip.prefix }}.0.{{ spine.one }} mask 255.255.255.240
-
- exit-address-family
- !
- address-family ipv6
-  neighbor {{ ipv6.prefix }}::{{ spine.one }} activate
-  neighbor {{ ipv6.prefix }}::{{ spine.two }} activate
-  network {{ ipv6.prefix }}::{{ spine.one }}/124
-  maximum-paths 2
- exit-address-family
-!
-ip classless
-no ip http server
-no ip http secure-server
-!
-!
-ipv6 router ospf 1
- router-id {{ ip.prefix }}.0.{{ global.switchid }}
- log-adjacency-changes
- maximum-paths 4
-!
-!
-!
-!
-no vstack
-!
-line con 0
-line vty 0 4
- no login
-line vty 5 15
- no login
-!
+set network ike crypto-profiles ike-crypto-profiles {{ ike.profile-name }} dh-group group14
+set network ike crypto-profiles ike-crypto-profiles {{ ike.profile-name }} encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles {{ ike.profile-name }} lifetime hours 8
+set network ike crypto-profiles ipsec-crypto-profiles {{ ipsec.profile-name }} esp authentication [ sha512 sha384 sha256 ]
+set network ike crypto-profiles ipsec-crypto-profiles {{ ipsec.profile-name }} esp encryption [ aes-256-gcm aes-256-cbc ]
+set network ike crypto-profiles ipsec-crypto-profiles {{ ipsec.profile-name }} lifetime hours 1
+set network ike crypto-profiles ipsec-crypto-profiles {{ ipsec.profile-name }} dh-group group14
+set network ike gateway {{ ike.gateway }} authentication pre-shared-key !!!REPLACE ME!!!
+set network ike gateway {{ ike.gateway }} protocol ikev1 dpd enable yes
+set network ike gateway {{ ike.gateway }} protocol ikev2 dpd enable yes
+set network ike gateway {{ ike.gateway }} protocol ikev2 ike-crypto-profile {{ ike.profile-name }}
+set network ike gateway {{ ike.gateway }} protocol version ikev2
+set network ike gateway {{ ike.gateway }} local-address ip {{ ike.localaddr }}
+set network ike gateway {{ ike.gateway }} local-address interface {{ ike.localif }}
+set network ike gateway {{ ike.gateway }} protocol-common nat-traversal enable no
+set network ike gateway {{ ike.gateway }} protocol-common fragmentation enable no
+set network ike gateway {{ ike.gateway }} peer-address ip {{ ike.peeraddr }}
+set network ike gateway {{ ike.gateway }} local-id id {{ ike.localid }}
+set network ike gateway {{ ike.gateway }} local-id type {{ ike.localidtype }}
+set network ike gateway {{ ike.gateway }} peer-id id {{ ike.peerid }}
+set network ike gateway {{ ike.gateway }} peer-id type {{ ike.peeridtype }}
+set network interface tunnel units tunnel.{{ ipsec.tunnelid }} ip {{ ipsec.tunnelip}}
+set network interface tunnel units tunnel.{{ ipsec.tunnelid }} interface-management-profile PING
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options incoming-bgp-connection allow yes
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options outgoing-bgp-connection allow yes
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options multihop 0
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options keep-alive-interval 60
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options open-delay-time 0
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options hold-time 180
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} connection-options idle-hold-time 15
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} local-address ip {{ ipsec.tunnelip }}
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} local-address interface tunnel.{{ ipsec.tunnelid }}
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} peer-address ip {{ bgp.peerip }}
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} bfd profile None
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} max-prefixes 5000
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} peer-as {{ bgp.peeroneasn }}
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} enable yes
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} reflector-client non-client
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} peer {{ bgp.peer }} peering-type unspecified
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} type ebgp remove-private-as no
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} type ebgp import-nexthop use-peer
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} type ebgp export-nexthop resolve
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} aggregated-confed-as-path yes
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} soft-reset-with-stored-info no
+set network virtual-router IT-VR protocol bgp peer-group {{ bgp.peergroup }} enable yes
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} action allow update extended-community none
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} action allow update community none
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} action allow update origin egp
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} action allow update as-path none
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} match address-prefix {{ bgp.importprefix }} exact no
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} match from-peer {{ bgp.peer }}
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} used-by {{ bgp.peergroup }}
+set network virtual-router IT-VR protocol bgp policy import rules {{ bgp.importfilter }} enable yes
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} action allow update extended-community none
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} action allow update community none
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} action allow update as-path none
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} action allow update origin egp
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} match address-prefix {{ bgp.exportprefix }} exact yes
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} used-by {{ bgp.peergroup }}
+set network virtual-router IT-VR protocol bgp policy export rules {{ bgp.exportfilter }} enable yes
+set network virtual-router IT-VR protocol redist-profile {{ bgp.redistprofileout }} filter type static
+set network virtual-router IT-VR protocol redist-profile {{ bgp.redistprofileout }} filter destination {{ bgp.exportprefix }}
+set network virtual-router IT-VR protocol redist-profile {{ bgp.redistprofileout }} priority 222
+set network virtual-router IT-VR protocol redist-profile {{ bgp.redistprofileout }} action redist
+set network tunnel ipsec {{ ipsec.tunnelname }} auto-key ike-gateway {{ ike.gateway }}
+set network tunnel ipsec {{ ipsec.tunnelname }} auto-key ipsec-crypto-profile {{ ipsec.profile-name }}
+set network tunnel ipsec {{ ipsec.tunnelname }} tunnel-monitor enable no
+set network tunnel ipsec {{ ipsec.tunnelname }} tunnel-interface tunnel.{{ ipsec.tunnelid }}
+set network tunnel ipsec {{ ipsec.tunnelname }} disabled yes
