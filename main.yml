@@ -1,2 +1,2 @@
 - name: Combine IOS Stackable Leaf
-  import_playbook: roles/combine-ios-stackable-leaf.yml
+  import_playbook: roles/combine-pan-config.yml
