@@ -1,4 +1,4 @@
-# Jinja2 Network Configuration Examples
+# NSX-T / VMC On AWS On-Premises PAN-OS Configuration Examples
 
 ## To use these examples
 * Fork this repository
@@ -7,10 +7,12 @@
 * Modify the combine playbook in `main.yml`
 
 ## Tested Platforms 
-* IOS 12.2(55)
+PAN-OS 7.x
+PAN-OS 8.x
 
 ## TODO
-* Anything other than IOS 12
+* Terraform for NSX-T
+* Ansible for NSX-T
 
 ## Authors
 * **Nick Schmidt** 
